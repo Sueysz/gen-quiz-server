@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors"
 import { db } from "./db.js"
+import { sessionMiddleWare } from "./config/session.js";
 
 const errorHandling = (res, error, errorMessage = "an error has occurred") => {
     const errorTime = new Date().getTime();
@@ -10,6 +11,7 @@ const errorHandling = (res, error, errorMessage = "an error has occurred") => {
 
 const app = express()
 
+app.use(sessionMiddleWare)
 app.use(express.json())
 app.use(cors())
 
@@ -34,6 +36,10 @@ app.get("/quiz/:slug", (req, res) => {
         }
     })
 });
+
+// app.post("/login", (req, res)=>{
+
+// })
 
 app.listen(8800, () => {
     console.log("Connected")
