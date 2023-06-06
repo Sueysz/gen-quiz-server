@@ -54,6 +54,17 @@ app.post('/login', (req, res, next) => {
     })(req, res, next);
 });
 
+app.post('/register', async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        const hashedPassword = await hashPassword(password);
+
+        res.json({ message: 'Registration successful' });
+    } catch (err) {
+        errorHandling(res, err, 'Erreur lors de l\'inscription');
+    }
+});
 
 app.listen(8800, () => {
     console.log('Connected');
