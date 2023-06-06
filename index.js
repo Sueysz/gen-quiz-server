@@ -4,7 +4,6 @@ import cors from 'cors';
 import { db } from './db.js';
 import { sessionMiddleWare } from './config/session.js';
 import { configPassport } from './config/passport.js';
-import bcrypt from 'bcrypt';
 import { hashPassword } from './utils/hashPassword.js';
 
 const errorHandling = (res, error, errorMessage = 'An error has occurred') => {
@@ -59,10 +58,16 @@ app.post('/register', async (req, res) => {
 
     try {
         const hashedPassword = await hashPassword(password);
+        const query = 'INSERT INTO users (username, password) VALUES (?,?)';
+        const result = await db.execute(query, [username, hashedPassword]);
 
-        res.json({ message: 'Registration successful' });
+        if (result.affetedRows === 1) {
+            res.json({ message: 'Registration successful' });
+        } else {
+            throw new Error('Failed to register user');
+        }
     } catch (err) {
-        errorHandling(res, err, 'Erreur lors de l\'inscription');
+        errorHandling(res, err, "Erreur lors de l'inscription");
     }
 });
 
