@@ -65,18 +65,23 @@ app.post('/register', async (req, res) => {
     if (!validator.isEmail(email)) {
         return res.status(400).json({ message: "L'e-mail est invalide" });
     }
-    
+
     try {
-        const connection = await db
+        const [existingUser] = await db.query('SELECT * FROM users WHERE username = ? OR email = ?', [username, email]);
+        if (existingUser.length > 0) {
+            return res.status(409).json({ message: "L'utilisateur ou l'e-mail existe déjà" });
+        }
         const hashedPassword = await hashPassword(password);
         const query = 'INSERT INTO users (username, email, password) VALUES (?,?,?)';
-        const result = await connection.query(query, [username, email, hashedPassword]);
-        console.log(result)
+        const result = await db.query(query, [username, email, hashedPassword]);
+        console.log(result);
     } catch (err) {
         errorHandling(res, err, "Erreur lors de l'inscription");
     }
-    res.send({message:'Success'});
+    res.send({ message: 'Success' });
 });
+
+
 
 app.listen(8800, () => {
     console.log('Connected');
