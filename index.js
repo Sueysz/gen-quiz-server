@@ -55,13 +55,14 @@ app.post('/login', (req, res, next) => {
 
 app.post('/register', async (req, res) => {
     const { username, password } = req.body;
+    console.log(req.body)
 
     try {
         const hashedPassword = await hashPassword(password);
         const query = 'INSERT INTO users (username, password) VALUES (?,?)';
         const result = await db.execute(query, [username, hashedPassword]);
 
-        if (result.affetedRows === 1) {
+        if (result.affectedRows === 1) {
             res.json({ message: 'Registration successful' });
         } else {
             throw new Error('Failed to register user');

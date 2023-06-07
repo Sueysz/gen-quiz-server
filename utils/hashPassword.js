@@ -1,6 +1,11 @@
-import bcrypt from "bcrypt"
+import bcrypt from "bcryptjs"
 
-export const hashPassword = (password) => {
+export const hashPassword = async (password) => {
+    if (!password) {
+        throw new Error('Password is required');
+    }
+
     const saltRounds = 10;
-    return bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    return hashedPassword;
 };
