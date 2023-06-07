@@ -5,6 +5,7 @@ import { db } from './db.js';
 import { sessionMiddleWare } from './config/session.js';
 import { configPassport } from './config/passport.js';
 import { hashPassword } from './utils/hashPassword.js';
+import validator from 'validator';
 
 const errorHandling = (res, error, errorMessage = 'An error has occurred') => {
     const errorTime = new Date().getTime();
@@ -54,22 +55,27 @@ app.post('/login', (req, res, next) => {
 });
 
 app.post('/register', async (req, res) => {
-    const { username, password } = req.body;
+    const { username, password, email } = req.body;
     console.log(req.body)
 
-    try {
-        const hashedPassword = await hashPassword(password);
-        const query = 'INSERT INTO users (username, password) VALUES (?,?)';
-        const result = await db.execute(query, [username, hashedPassword]);
+    if (!email) {
+        return res.status(400).json({ message: "L'e-mail est requis" });
+    }
 
-        if (result.affectedRows === 1) {
-            res.json({ message: 'Registration successful' });
-        } else {
-            throw new Error('Failed to register user');
-        }
+    if (!validator.isEmail(email)) {
+        return res.status(400).json({ message: "L'e-mail est invalide" });
+    }
+    
+    try {
+        const connection = await db
+        const hashedPassword = await hashPassword(password);
+        const query = 'INSERT INTO users (username, email, password) VALUES (?,?,?)';
+        const result = await connection.query(query, [username, email, hashedPassword]);
+        console.log(result)
     } catch (err) {
         errorHandling(res, err, "Erreur lors de l'inscription");
     }
+    res.send({message:'Success'});
 });
 
 app.listen(8800, () => {
