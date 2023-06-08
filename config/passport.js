@@ -3,9 +3,10 @@ import passport from "passport";
 import bcrypt from "bcryptjs";
 import { db } from "../db.js";
 
-const authenticateUser = (username, password, done) => {
-    const query = "SELECT * FROM users WHERE username = ?";
-    db.execute(query, [username])
+const authenticateUser = (email, password, done) => {
+    console.log('Authenticating user...');
+    const query = "SELECT * FROM users WHERE email = ?";
+    db.execute(query, [email])
         .then(([rows]) => {
             if (!rows.length) {
                 return done(null, false, { message: "Invalid credentials" });
@@ -13,6 +14,8 @@ const authenticateUser = (username, password, done) => {
             const user = rows[0];
 
             bcrypt.compare(password, user.password, (err, isMatch) => {
+                console.log('Comparing passwords...');
+                console.log('isMatch:', isMatch);
                 if (err) {
                     return done(err);
                 }
@@ -29,10 +32,12 @@ const authenticateUser = (username, password, done) => {
 };
 
 const serializeUser = (user, done) => {
+    console.log('Serializing user...');
     done(null, user.id);
 };
 
 const deserializeUser = (id, done) => {
+    console.log('Deserializing user...');
     const query = "SELECT * FROM users WHERE id = ?";
     db.execute(query, [id])
         .then(([rows]) => {
@@ -48,7 +53,7 @@ const deserializeUser = (id, done) => {
 };
 
 export const configPassport = () => {
-    passport.use(new LocalStrategy(authenticateUser));
+    passport.use(new LocalStrategy({usernameField:'email'},authenticateUser));
     passport.serializeUser(serializeUser);
     passport.deserializeUser(deserializeUser);
 };
