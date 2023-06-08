@@ -37,22 +37,29 @@ app.get('/quiz/:slug', async (req, res) => {
     }
 });
 
-app.post('/login', (req, res, next) => {
-    passport.authenticate('local', (err, user) => {
+app.post('/login', async (req, res, next) => {
+    console.log('Attempting to log in...');
+
+    await passport.authenticate('local', (err, user) => {
         if (err) {
+            console.log('Passport authentication error:', err);
             return next(err);
         }
         if (!user) {
+            console.log('Invalid credentials');
             return res.status(401).json({ message: 'Invalid credentials' });
         }
         req.logIn(user, (err) => {
             if (err) {
+                console.log('Login error:', err);
                 return next(err);
             }
+            console.log('Authentication successful');
             return res.json({ message: 'Authentication successful' });
         });
     })(req, res, next);
 });
+
 
 app.post('/register', async (req, res) => {
     const { username, password, email } = req.body;
