@@ -88,6 +88,11 @@ app.post('/register', async (req, res) => {
     res.send({ message: 'Success' });
 });
 
+app.post('/logout', (req,res) =>{
+    req.logout();
+    res.json({ message: 'Déconnexion réussie'});
+});
+
 
 
 app.listen(8800, () => {
