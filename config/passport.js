@@ -1,7 +1,7 @@
 import { Strategy as LocalStrategy } from "passport-local";
 import passport from "passport";
 import bcrypt from "bcryptjs";
-import { db } from "../db.js";
+import { db } from "../Lib/db.js";
 
 const authenticateUser = (email, password, done) => {
     console.log('Authenticating user...');

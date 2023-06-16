@@ -1,10 +1,10 @@
 import express from 'express';
 import passport from 'passport';
 import cors from 'cors';
-import { db } from './db.js';
+import { db } from './Lib/db.js';
 import { sessionMiddleWare } from './config/session.js';
 import { configPassport } from './config/passport.js';
-import { hashPassword } from './utils/hashPassword.js';
+import { hashPassword } from './Lib/hashPassword.js';
 import validator from 'validator';
 
 const errorHandling = (res, error, errorMessage = 'An error has occurred') => {
@@ -60,7 +60,6 @@ app.post('/login', async (req, res, next) => {
     })(req, res, next);
 });
 
-
 app.post('/register', async (req, res) => {
     const { username, password, email } = req.body;
     console.log(req.body)
@@ -90,10 +89,8 @@ app.post('/register', async (req, res) => {
 
 app.post('/logout', (req,res) =>{
     req.logout();
-    res.json({ message: 'Déconnexion réussie'});
+    res.json({ message: 'Déconnexion réussie'})
 });
-
-
 
 app.listen(8800, () => {
     console.log('Connected');
