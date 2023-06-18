@@ -18,6 +18,8 @@ configPassport();
 app.use(sessionMiddleWare);
 app.use(express.json());
 app.use(cors());
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.get('/quiz', async (req, res) => {
     try {
@@ -55,7 +57,7 @@ app.post('/login', async (req, res, next) => {
                 return next(err);
             }
             console.log('Authentication successful');
-            return res.json({ message: 'Authentication successful' });
+            return res.status(200).json({ message: 'Authentication successful' });
         });
     })(req, res, next);
 });
@@ -82,14 +84,19 @@ app.post('/register', async (req, res) => {
         const result = await db.query(query, [username, email, hashedPassword]);
         console.log(result);
     } catch (err) {
-        errorHandling(res, err, "Error during registration.");
+        errorHandling(res.status(500), err, "Error during registration.");
     }
     res.send({ message: 'Success' });
 });
 
-app.post('/logout', (req,res) =>{
-    req.logout()
-    res.json({ message: 'Logout successful.'})
+app.post('/logout',(req,res) =>{
+    req.logout((err)=>{
+        if (err) {
+            console.log('Logout error:', err);
+            return res.status(500).json({ message: 'An error occured during'});
+        }
+    })
+    return res.status(200).json({ message: 'Logout successful.'})
 });
 
 app.listen(8800, () => {
