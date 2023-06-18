@@ -11,4 +11,4 @@ export const db = await mysql.createConnection({
     charset: 'utf8mb4',
 });
 
-console.log('Connecté à la base de données MySQL');
+console.log('Connected to the MySQL database');

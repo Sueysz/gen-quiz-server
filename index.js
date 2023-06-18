@@ -24,7 +24,7 @@ app.get('/quiz', async (req, res) => {
         const [result] = await db.execute('SELECT * FROM quiz');
         res.json(result);
     } catch (err) {
-        errorHandling(res, err, 'Erreur lors de la récupération des quiz');
+        errorHandling(res, err, 'Error occurred while retrieving quizzes.');
     }
 });
 
@@ -33,7 +33,7 @@ app.get('/quiz/:slug', async (req, res) => {
         const [result] = await db.execute('SELECT * FROM quiz WHERE slug = ?', [req.params.slug]);
         res.json(result[0]);
     } catch (err) {
-        errorHandling(res, err, "Erreur lors de la récupération d'un quiz");
+        errorHandling(res, err, "Error occurred while retrieving quizzes.");
     }
 });
 
@@ -65,31 +65,31 @@ app.post('/register', async (req, res) => {
     console.log(req.body)
 
     if (!email) {
-        return res.status(400).json({ message: "L'e-mail est requis" });
+        return res.status(400).json({ message: "L'e-mail is required" });
     }
 
     if (!validator.isEmail(email)) {
-        return res.status(400).json({ message: "L'e-mail est invalide" });
+        return res.status(400).json({ message: "The email is invalid." });
     }
 
     try {
         const [existingUser] = await db.query('SELECT * FROM users WHERE username = ? OR email = ?', [username, email]);
         if (existingUser.length > 0) {
-            return res.status(409).json({ message: "L'utilisateur ou l'e-mail existe déjà" });
+            return res.status(409).json({ message: "The user or email already exists." });
         }
         const hashedPassword = await hashPassword(password);
         const query = 'INSERT INTO users (username, email, password) VALUES (?,?,?)';
         const result = await db.query(query, [username, email, hashedPassword]);
         console.log(result);
     } catch (err) {
-        errorHandling(res, err, "Erreur lors de l'inscription");
+        errorHandling(res, err, "Error during registration.");
     }
     res.send({ message: 'Success' });
 });
 
 app.post('/logout', (req,res) =>{
-    req.logout();
-    res.json({ message: 'Déconnexion réussie'})
+    req.logout()
+    res.json({ message: 'Logout successful.'})
 });
 
 app.listen(8800, () => {
