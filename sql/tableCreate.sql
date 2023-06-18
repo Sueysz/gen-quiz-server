@@ -10,7 +10,6 @@ CREATE TABLE users (
    username VARCHAR(45) NOT NULL,
    email VARCHAR(255) NOT NULL,
    password VARCHAR(255) NOT NULL,
-   img VARCHAR(255) NOT NULL,
    PRIMARY KEY (id)
 );
 
@@ -19,6 +18,6 @@ CREATE TABLE quiz (
    id INT NOT NULL AUTO_INCREMENT,
    color VARCHAR(255) NOT NULL,
    slug VARCHAR(255),
-   questions TEXT,
+   questions json,
    PRIMARY KEY (id)
 );
