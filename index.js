@@ -17,7 +17,12 @@ const app = express();
 configPassport();
 app.use(sessionMiddleWare);
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin:'http://localhost:5173',
+    methods:['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type'],
+    credentials:true
+}));
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -96,7 +101,7 @@ app.post('/logout',(req,res) =>{
             return res.status(500).json({ message: 'An error occured during'});
         }
     })
-    return res.status(200).json({ message: 'Logout successful.'})
+    return res.status(200).json({ message: 'Log-out successful.'})
 });
 
 app.listen(8800, () => {
