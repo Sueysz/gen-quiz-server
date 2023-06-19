@@ -3,7 +3,7 @@ import passport from 'passport';
 import cors from 'cors';
 import { db } from './Lib/db.js';
 import { sessionMiddleWare } from './config/session.js';
-import { configPassport } from './config/passport.js';
+import { configPassport, generateToken } from './config/passport.js';
 import { hashPassword } from './Lib/hashPassword.js';
 import validator from 'validator';
 
@@ -18,11 +18,15 @@ configPassport();
 app.use(sessionMiddleWare);
 app.use(express.json());
 app.use(cors({
-    origin:'http://localhost:5173',
-    methods:['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type'],
-    credentials:true
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type','Authorization'],
+    credentials: true
 }));
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    next();
+});
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -62,7 +66,10 @@ app.post('/login', async (req, res, next) => {
                 return next(err);
             }
             console.log('Authentication successful');
-            return res.status(200).json({ message: 'Authentication successful' });
+
+            const token = generateToken(user.id)
+
+            return res.status(200).json({ message: 'Authentication successful', token });
         });
     })(req, res, next);
 });
@@ -94,14 +101,14 @@ app.post('/register', async (req, res) => {
     res.send({ message: 'Success' });
 });
 
-app.post('/logout',(req,res) =>{
-    req.logout((err)=>{
+app.post('/logout', (req, res) => {
+    req.logout((err) => {
         if (err) {
             console.log('Logout error:', err);
-            return res.status(500).json({ message: 'An error occured during'});
+            return res.status(500).json({ message: 'An error occured during' });
         }
     })
-    return res.status(200).json({ message: 'Log-out successful.'})
+    return res.status(200).json({ message: 'Log-out successful.' })
 });
 
 app.listen(8800, () => {
