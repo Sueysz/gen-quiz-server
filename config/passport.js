@@ -2,6 +2,7 @@ import { Strategy as LocalStrategy } from "passport-local";
 import passport from "passport";
 import bcrypt from "bcryptjs";
 import { db } from "../Lib/db.js";
+import jwt from 'jsonwebtoken';
 
 const authenticateUser = (email, password, done) => {
     console.log('Authenticating user...');
@@ -52,8 +53,20 @@ const deserializeUser = (id, done) => {
         });
 };
 
+export const generateToken = (user) => {
+
+    const payload = {
+        id: user.id,
+        email: user.email,
+    };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: '1h',
+    });
+    return token;
+}
+
 export const configPassport = () => {
-    passport.use(new LocalStrategy({usernameField:'email'},authenticateUser));
+    passport.use(new LocalStrategy({ usernameField: 'email' }, authenticateUser));
     passport.serializeUser(serializeUser);
     passport.deserializeUser(deserializeUser);
 };
