@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(cors({
     origin: 'http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type','Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
 }));
 app.use((req, res, next) => {
@@ -109,6 +109,41 @@ app.post('/logout', (req, res) => {
         }
     })
     return res.status(200).json({ message: 'Log-out successful.' })
+
+});
+
+const generateSlug = (title)=>{
+    const slug = title
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .substring(0,30);
+    return slug
+}
+
+app.post('/createQuiz', async (req, res) => {
+    const { title, color, questions } = req.body;
+    
+    const slug = generateSlug(title)
+
+    try {
+        const sql = `INSERT INTO quiz (title, color, questions, slug) 
+                    VALUES (?, ?, ?, ?)`;
+
+        await db.execute(sql, [title, color, questions, slug]);
+
+        const quiz = {
+            title,
+            color,
+            questions,
+            slug,
+        }
+
+        res.status(200).json({ message: 'Quiz create successfly', quiz });
+    } catch (err) {
+        errorHandling(res, err, 'An Error occured.');
+    }
 });
 
 app.listen(8800, () => {
