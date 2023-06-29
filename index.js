@@ -67,7 +67,7 @@ app.post('/login', async (req, res, next) => {
             }
             console.log('Authentication successful');
 
-            const token = generateToken(user.id)
+            const token = generateToken(user);
 
             return res.status(200).json({ message: 'Authentication successful', token });
         });
