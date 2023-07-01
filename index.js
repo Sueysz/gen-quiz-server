@@ -6,6 +6,7 @@ import { sessionMiddleWare } from './config/session.js';
 import { configPassport, generateToken } from './config/passport.js';
 import { hashPassword } from './Lib/hashPassword.js';
 import validator from 'validator';
+import jwt from "jsonwebtoken"
 
 const errorHandling = (res, error, errorMessage = 'An error has occurred') => {
     const errorTime = new Date().getTime();
@@ -112,19 +113,19 @@ app.post('/logout', (req, res) => {
 
 });
 
-const generateSlug = (title)=>{
+const generateSlug = (title) => {
     const slug = title
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-    .replace(/-+/g, '-')
-    .substring(0,30);
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '')
+        .replace(/-+/g, '-')
+        .substring(0, 30);
     return slug
 }
 
 app.post('/createQuiz', async (req, res) => {
     const { title, color, questions } = req.body;
-    
+
     const slug = generateSlug(title)
 
     try {
@@ -145,6 +146,31 @@ app.post('/createQuiz', async (req, res) => {
         errorHandling(res, err, 'An Error occured.');
     }
 });
+
+app.use((req,res,next)=>{
+    const token = req.header("Authorization").slice("Bearer ".length)
+    const decodeur = jwt.decode(token);
+    req.user = {id:decodeur.id}
+    next()
+})
+
+app.get('/user', async (req,res) =>{
+    try {
+        const userId = req.user.id;
+        console.log(userId)
+        const [rows] = await db.execute('SELECT * FROM users WHERE id = ?', [userId]);
+
+        if(!rows.length){
+            return res.status(404).json({message: 'User not found'});
+        }
+        const user = rows[0];
+
+        res.json(user);
+    } catch (error) {
+        console.error('Error detching user details:', error);
+        res.status(500).json({ message: 'Failed to fetch user details' });
+    }
+})
 
 app.listen(8800, () => {
     console.log('Connected');
