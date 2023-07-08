@@ -1,12 +1,12 @@
 import express from 'express';
 import passport from 'passport';
 import cors from 'cors';
-import { db } from './Lib/db.js';
-import { sessionMiddleWare } from './config/session.js';
-import { configPassport, generateToken } from './config/passport.js';
-import { hashPassword } from './Lib/hashPassword.js';
 import validator from 'validator';
 import jwt from "jsonwebtoken"
+import { db } from './lib/db.js';
+import { sessionMiddleWare } from './lib/session.js';
+import { configPassport, generateToken } from './lib/passport.js';
+import { hashPassword } from './lib/hashPassword.js';
 
 const errorHandling = (res, error, errorMessage = 'An error has occurred') => {
     const errorTime = new Date().getTime();
