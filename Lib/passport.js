@@ -1,7 +1,7 @@
 import { Strategy as LocalStrategy } from "passport-local";
 import passport from "passport";
 import bcrypt from "bcryptjs";
-import { db } from "../Lib/db.js";
+import { db } from "./db.js";
 import jwt from 'jsonwebtoken';
 
 const authenticateUser = async (email, password, done) => {
