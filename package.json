@@ -25,7 +25,6 @@
     "validator": "^13.9.0"
   },
   "devDependencies": {
-    "eslint": "^8.42.0",
-    "nodemon": "^2.0.22"
+    "eslint": "^8.42.0"
   }
 }
