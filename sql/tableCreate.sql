@@ -21,3 +21,14 @@ CREATE TABLE quiz (
    questions json,
    PRIMARY KEY (id)
 );
+
+CREATE TABLE `genquiz`.`category` (
+   `id` INT NOT NULL AUTO_INCREMENT,
+   `name` VARCHAR(45) NOT NULL,
+   PRIMARY KEY (`id`));
+
+
+CREATE TABLE history (
+   id INT NOT NULL AUTO_INCREMENT,
+
+)

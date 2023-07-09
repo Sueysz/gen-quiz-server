@@ -14,9 +14,6 @@ const authenticateUser = async (email, password, done) => {
             return done(null, false, { message: "Invalid credentials" });
         }
 
-        // is email guaranteed to be unique ?
-        // else you need to handle the case where you have more than one row
-
         const user = rows[0];
 
         bcrypt.compare(password, user.password, (err, isMatch) => {
