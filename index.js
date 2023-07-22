@@ -147,6 +147,23 @@ app.post('/createQuiz', async (req, res) => {
     }
 });
 
+app.get('/categories', async (req,res) =>{
+    try{
+        const categoriesId = req.body;
+        console.log(categoriesId)
+        const [rows] = await db.execute('SELECT * FROM categories',[categoriesId]);
+
+        if(!rows.length){
+            return res.status(404).json({message:'categories not found'});
+        }
+        const categories = rows;
+        res.json(categories);
+    } catch (error){
+        console.error('Error fetching categories',error);
+        res.status(500).json({ message: 'Failed to fetch categories'});
+    }
+})
+
 app.use((req,res,next)=>{
     const token = req.header("Authorization").slice("Bearer ".length)
     const decodeur = jwt.decode(token);
@@ -164,10 +181,10 @@ app.get('/user', async (req,res) =>{
             return res.status(404).json({message: 'User not found'});
         }
         const user = rows[0];
-
+        user.password = undefined;
         res.json(user);
     } catch (error) {
-        console.error('Error detching user details:', error);
+        console.error('Error fetching user details:', error);
         res.status(500).json({ message: 'Failed to fetch user details' });
     }
 })

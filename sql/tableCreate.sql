@@ -32,3 +32,18 @@ CREATE TABLE history (
    id INT NOT NULL AUTO_INCREMENT,
 
 )
+
+CREATE TABLE categories_quiz (
+   id INT,
+   categories_id INT,
+   quiz_id INT,
+   FOREIGN KEY (categories_id)
+      REFERENCES categories(id)
+      ON UPDATE CASCADE
+      ON DELETE CASCADE,
+	FOREIGN KEY (quiz_id)
+		REFERENCES quiz(id)
+      ON UPDATE CASCADE
+      ON DELETE CASCADE
+) ENGINE=INNODB;
+
