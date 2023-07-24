@@ -151,6 +151,23 @@ app.get('/categories', async (req,res) =>{
     }
 })
 
+app.get('/quiz_categories', async (req,res) =>{
+    try{
+        const quizCategoriesId = req.body;
+        console.log(quizCategoriesId)
+        const [rows] = await db.execute('SELECT * FROM categories_quiz',[quizCategoriesId]);
+
+        if(!rows.length){
+            return res.status(404).json({message:'categories not found'});
+        }
+        const quizCategories = rows;
+        res.json(quizCategories);
+    } catch (error){
+        console.error('Error fetching quiz_categories',error);
+        res.status(500).json({ message: 'Failed to fetch quiz_categories'});
+    }
+})
+
 app.use((req,res,next)=>{
     const token = req.header("Authorization").slice("Bearer ".length)
     const decodeur = jwt.decode(token);
