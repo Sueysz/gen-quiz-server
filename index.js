@@ -40,9 +40,9 @@ app.get('/quiz', async (req, res) => {
     }
 });
 
-app.get('/quiz/:slug', async (req, res) => {
+app.get('/quiz/:id', async (req, res) => {
     try {
-        const [result] = await db.execute('SELECT * FROM quiz WHERE slug = ?', [req.params.slug]);
+        const [result] = await db.execute('SELECT * FROM quiz WHERE id = ?', [req.params.id]);
         res.json(result[0]);
     } catch (err) {
         errorHandling(res, err, "Error occurred while retrieving quizzes.");
@@ -113,32 +113,19 @@ app.post('/logout', (req, res) => {
 
 });
 
-const generateSlug = (title) => {
-    const slug = title
-        .toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[^a-z0-9-]/g, '')
-        .replace(/-+/g, '-')
-        .substring(0, 30);
-    return slug
-}
-
 app.post('/createQuiz', async (req, res) => {
     const { title, color, questions } = req.body;
 
-    const slug = generateSlug(title)
-
     try {
-        const sql = `INSERT INTO quiz (title, color, questions, slug) 
+        const sql = `INSERT INTO quiz (title, color, questions) 
                     VALUES (?, ?, ?, ?)`;
 
-        await db.execute(sql, [title, color, questions, slug]);
+        await db.execute(sql, [title, color, questions]);
 
         const quiz = {
             title,
             color,
             questions,
-            slug,
         }
 
         res.status(200).json({ message: 'Quiz create successfly', quiz });
