@@ -33,7 +33,7 @@ app.use(passport.session());
 
 app.get('/quiz', async (req, res) => {
     try {
-        const [result] = await db.execute('SELECT * FROM quiz');
+        const [result] = await db.execute('SELECT id,title,color FROM quiz');
         res.json(result);
     } catch (err) {
         errorHandling(res, err, 'Error occurred while retrieving quizzes.');
@@ -42,7 +42,7 @@ app.get('/quiz', async (req, res) => {
 
 app.get('/quiz/:id', async (req, res) => {
     try {
-        const [result] = await db.execute('SELECT * FROM quiz WHERE id = ?', [req.params.id]);
+        const [result] = await db.execute('SELECT id,questions,color,title FROM quiz WHERE id = ?', [req.params.id]);
         res.json(result[0]);
     } catch (err) {
         errorHandling(res, err, "Error occurred while retrieving quizzes.");
@@ -138,16 +138,15 @@ app.get('/categories', async (req,res) =>{
     try{
         const categoriesId = req.body;
         console.log(categoriesId)
-        const [rows] = await db.execute('SELECT * FROM categories',[categoriesId]);
+        const [rows] = await db.execute('SELECT id,name FROM categories',[categoriesId]);
 
         if(!rows.length){
             return res.status(404).json({message:'categories not found'});
         }
         const categories = rows;
         res.json(categories);
-    } catch (error){
-        console.error('Error fetching categories',error);
-        res.status(500).json({ message: 'Failed to fetch categories'});
+    } catch (err){
+        errorHandling(res, err, 'Failed to fectch categories');
     }
 })
 
@@ -162,9 +161,8 @@ app.get('/quiz_categories', async (req,res) =>{
         }
         const quizCategories = rows;
         res.json(quizCategories);
-    } catch (error){
-        console.error('Error fetching quiz_categories',error);
-        res.status(500).json({ message: 'Failed to fetch quiz_categories'});
+    } catch (err){
+        errorHandling(res, err,'Failed to fetch categories_quiz');
     }
 })
 
@@ -179,7 +177,7 @@ app.get('/user', async (req,res) =>{
     try {
         const userId = req.user.id;
         console.log(userId)
-        const [rows] = await db.execute('SELECT * FROM users WHERE id = ?', [userId]);
+        const [rows] = await db.execute('SELECT id,username,email FROM users WHERE id = ?', [userId]);
 
         if(!rows.length){
             return res.status(404).json({message: 'User not found'});
@@ -187,9 +185,8 @@ app.get('/user', async (req,res) =>{
         const user = rows[0];
         user.password = undefined;
         res.json(user);
-    } catch (error) {
-        console.error('Error fetching user details:', error);
-        res.status(500).json({ message: 'Failed to fetch user details' });
+    } catch (err) {
+        errorHandling(res, err, 'Failed to fecht user');
     }
 })
 
