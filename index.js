@@ -114,23 +114,31 @@ app.post('/logout', (req, res) => {
 });
 
 app.post('/createQuiz', async (req, res) => {
-    const { title, color, questions } = req.body;
+    const { title, color, questions, category } = req.body;
+
+    console.log(req.body)
 
     try {
-        const sql = `INSERT INTO quiz (title, color, questions) 
-                    VALUES (?, ?, ?, ?)`;
+        const query = `INSERT INTO quiz (title, color, questions) 
+                    VALUES (?, ?, ?)`;
 
-        await db.execute(sql, [title, color, questions]);
+        const [result] = await db.execute(query, [title, color, JSON.stringify(questions)]);
+        const quizId = result.insertId;
+        
+        await db.execute('INSERT INTO categories_quiz (category_id, quiz_id) VALUES (?, ?)', [category, quizId]);
 
         const quiz = {
+            id: quizId,
             title,
             color,
             questions,
+            category_id: category,
         }
 
-        res.status(200).json({ message: 'Quiz create successfly', quiz });
+        res.status(200).json({ message: 'Quiz created successfully', quiz });
     } catch (err) {
-        errorHandling(res, err, 'An Error occured.');
+        errorHandling(res, err, 'An Error occurred.');
+        console.log(err)
     }
 });
 
@@ -149,6 +157,20 @@ app.get('/categories', async (req,res) =>{
         errorHandling(res, err, 'Failed to fectch categories');
     }
 })
+
+app.post('/addQuizToCategory', async (req,res) =>{
+    const { categoryId, quizId } = req.body;
+    console.log(categoryId, quizId);
+    try{
+        await db.execute('INSERT INTO categories_quiz (category_id, quiz_id) VALUES (?, ?)',[categoryId, quizId]);
+        console.log('Relation added successfully');
+        res.status(200).json({ message: 'Relation added successfully'});
+    } catch (err){
+        errorHandling(res, err, 'Error while inserting into categories_quiz table:', err);
+    }
+})
+
+
 
 app.get('/quiz_categories', async (req,res) =>{
     try{
