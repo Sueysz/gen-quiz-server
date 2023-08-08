@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs"
 
+//crypt les password que l'on m'envois 
 export const hashPassword = async (password) => {
     if (!password) {
         throw new Error('Password is required');

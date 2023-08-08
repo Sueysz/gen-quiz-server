@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+//connection à ma db 
 export const db = await mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
