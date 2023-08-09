@@ -10,7 +10,7 @@ import { hashPassword } from './lib/hashPassword.js';
 
 const errorHandling = (res, error, errorMessage = 'An error has occurred') => {
     const errorTime = new Date().getTime();
-    console.error(errorTime, error);
+    console.error("error:"+errorTime, error);
     res.status(500).json({ error: errorMessage, errorTime });
 };
 
@@ -51,7 +51,7 @@ app.get('/quiz/:id', async (req, res) => {
 
 app.post('/register', async (req, res) => {
     const { username, password, email } = req.body;
-    console.log(req.body)
+    console.log("req.body:register"+req.body)
 
     if (!email) {
         return res.status(400).json({ message: "L'e-mail is required" });
@@ -69,7 +69,7 @@ app.post('/register', async (req, res) => {
         const hashedPassword = await hashPassword(password);
         const query = 'INSERT INTO users (username, email, password) VALUES (?,?,?)';
         const result = await db.query(query, [username, email, hashedPassword]);
-        console.log(result);
+        console.log("result:"+result);
     } catch (err) {
         errorHandling(res.status(500), err, "Error during registration.");
     }
@@ -90,7 +90,7 @@ app.post('/logout', (req, res) => {
 app.get('/categories', async (req,res) =>{
     try{
         const categoriesId = req.body;
-        console.log(categoriesId)
+        console.log("categories_id:"+categoriesId)
         const [rows] = await db.execute('SELECT id,name FROM categories',[categoriesId]);
 
         if(!rows.length){
@@ -105,7 +105,7 @@ app.get('/categories', async (req,res) =>{
 
 app.post('/addQuizToCategory', async (req,res) =>{
     const { categoryId, quizId } = req.body;
-    console.log(categoryId, quizId);
+    console.log("categories & quizId:id"+categoryId, quizId);
     try{
         await db.execute('INSERT INTO categories_quiz (category_id, quiz_id) VALUES (?, ?)',[categoryId, quizId]);
         console.log('Relation added successfully');
@@ -120,7 +120,7 @@ app.post('/addQuizToCategory', async (req,res) =>{
 app.get('/quiz_categories', async (req,res) =>{
     try{
         const quizCategoriesId = req.body;
-        console.log(quizCategoriesId)
+        console.log("quizCategories:"+quizCategoriesId)
         const [rows] = await db.execute('SELECT * FROM categories_quiz',[quizCategoriesId]);
 
         if(!rows.length){
@@ -171,6 +171,7 @@ app.use((req, res, next) => {
     console.log('Received token:', token); // Ajoutez cette ligne
 
     try {
+        console.log("mon Secret avant:"+ process.env.JWT_SECRET)
         const decodeur = jwt.verify(token, process.env.JWT_SECRET);
         req.user = { id: decodeur.id };
         next();
