@@ -49,32 +49,6 @@ app.get('/quiz/:id', async (req, res) => {
     }
 });
 
-app.post('/login', async (req, res, next) => {
-    console.log('Attempting to log in...');
-
-    await passport.authenticate('local', (err, user) => {
-        if (err) {
-            console.log('Passport authentication error:', err);
-            return next(err);
-        }
-        if (!user) {
-            console.log('Invalid credentials');
-            return res.status(401).json({ message: 'Invalid credentials' });
-        }
-        req.logIn(user, (err) => {
-            if (err) {
-                console.log('Login error:', err);
-                return next(err);
-            }
-            console.log('Authentication successful');
-
-            const token = generateToken(user);
-
-            return res.status(200).json({ message: 'Authentication successful', token });
-        });
-    })(req, res, next);
-});
-
 app.post('/register', async (req, res) => {
     const { username, password, email } = req.body;
     console.log(req.body)
@@ -111,35 +85,6 @@ app.post('/logout', (req, res) => {
     })
     return res.status(200).json({ message: 'Log-out successful.' })
 
-});
-
-app.post('/createQuiz', async (req, res) => {
-    const { title, color, questions, category } = req.body;
-
-    console.log(req.body)
-
-    try {
-        const query = `INSERT INTO quiz (title, color, questions) 
-                    VALUES (?, ?, ?)`;
-
-        const [result] = await db.execute(query, [title, color, JSON.stringify(questions)]);
-        const quizId = result.insertId;
-        
-        await db.execute('INSERT INTO categories_quiz (category_id, quiz_id) VALUES (?, ?)', [category, quizId]);
-
-        const quiz = {
-            id: quizId,
-            title,
-            color,
-            questions,
-            category_id: category,
-        }
-
-        res.status(200).json({ message: 'Quiz created successfully', quiz });
-    } catch (err) {
-        errorHandling(res, err, 'An Error occurred.');
-        console.log(err)
-    }
 });
 
 app.get('/categories', async (req,res) =>{
@@ -188,12 +133,52 @@ app.get('/quiz_categories', async (req,res) =>{
     }
 })
 
-app.use((req,res,next)=>{
-    const token = req.header("Authorization").slice("Bearer ".length)
-    const decodeur = jwt.decode(token);
-    req.user = {id:decodeur.id}
-    next()
-})
+app.post('/login', async (req, res, next) => {
+    console.log('Attempting to log in...');
+
+    //utilisation du middleware d'authentification de passport pour vérifier les information de connexion
+    await passport.authenticate('local', (err, user) => {
+        if (err) {
+            console.log('Passport authentication error:', err);
+            return next(err);
+        }
+        if (!user) {
+            console.log('Invalid credentials');
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+        req.logIn(user, (err) => {
+            if (err) {
+                console.log('Login error:', err);
+                return next(err);
+            }
+            console.log('Authentication successful');
+
+            const token = generateToken(user);
+
+            return res.status(200).json({ message: 'Authentication successful', token });
+        });
+    })(req, res, next);
+});
+
+app.use((req, res, next) => {
+    const authHeader = req.header("Authorization");
+    if (!authHeader) {
+        console.log('Authorization header missing');
+        return res.status(401).json({ message: "Authorization header missing" });
+    }
+
+    const token = authHeader.slice("Bearer ".length);
+    console.log('Received token:', token); // Ajoutez cette ligne
+
+    try {
+        const decodeur = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = { id: decodeur.id };
+        next();
+    } catch (error) {
+        console.log('Invalid token:', error); // Ajoutez cette ligne
+        return res.status(401).json({ message: "Invalid token" });
+    }
+});
 
 app.get('/user', async (req,res) =>{
     try {
@@ -211,6 +196,36 @@ app.get('/user', async (req,res) =>{
         errorHandling(res, err, 'Failed to fecht user');
     }
 })
+
+app.post('/createQuiz', async (req, res) => {
+    const { title, color, questions, category } = req.body;
+    const userId = req.user.id;
+
+    console.log(req.body)
+
+    try {
+        const query = `INSERT INTO quiz (title, color, questions, userId) 
+                    VALUES (?, ?, ?, ?)`;
+
+        const [result] = await db.execute(query, [title, color, JSON.stringify(questions),userId]);
+        const quizId = result.insertId;
+        
+        await db.execute('INSERT INTO categories_quiz (category_id, quiz_id) VALUES (?, ?)', [category, quizId]);
+
+        const quiz = {
+            id: quizId,
+            title,
+            color,
+            questions,
+            category_id: category,
+        }
+
+        res.status(200).json({ message: 'Quiz created successfully', quiz });
+    } catch (err) {
+        errorHandling(res, err, 'An Error occurred.');
+        console.log(err)
+    }
+});
 
 app.listen(8800, () => {
     console.log('Connected');
