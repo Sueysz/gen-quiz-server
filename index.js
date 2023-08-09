@@ -205,7 +205,7 @@ app.post('/createQuiz', async (req, res) => {
     console.log(req.body)
 
     try {
-        const query = `INSERT INTO quiz (title, color, questions, userId) 
+        const query = `INSERT INTO quiz (title, color, questions, creator_id) 
                     VALUES (?, ?, ?, ?)`;
 
         const [result] = await db.execute(query, [title, color, JSON.stringify(questions),userId]);
