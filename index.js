@@ -168,16 +168,21 @@ app.use((req, res, next) => {
     }
 
     const token = authHeader.slice("Bearer ".length);
-    console.log('Received token:', token); // Ajoutez cette ligne
+    console.log('Received token:', token);
 
     try {
-        console.log("mon Secret avant:"+ process.env.JWT_SECRET)
-        const decodeur = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = { id: decodeur.id };
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = { id: decoded.id };
         next();
     } catch (error) {
-        console.log('Invalid token:', error); // Ajoutez cette ligne
-        return res.status(401).json({ message: "Invalid token" });
+        if (error.name === 'TokenExpiredError') {
+            console.log('Token expired:', error.expiredAt);
+            req.logout(); // Déconnexion automatique de l'utilisateur
+            return res.status(401).json({ message: "Token expired. User has been logged out." });
+        } else {
+            console.log('Invalid token:', error);
+            return res.status(401).json({ message: "Invalid token" });
+        }
     }
 });
 
@@ -185,14 +190,18 @@ app.get('/user', async (req,res) =>{
     try {
         const userId = req.user.id;
         console.log(userId)
-        const [rows] = await db.execute('SELECT id,username,email FROM users WHERE id = ?', [userId]);
+        const [usersRows] = await db.execute('SELECT id,username,email FROM users WHERE id = ?', [userId]);
 
-        if(!rows.length){
+        if(!usersRows.length){
             return res.status(404).json({message: 'User not found'});
         }
-        const user = rows[0];
+        const user = usersRows[0];
         user.password = undefined;
-        res.json(user);
+
+        const [quizRows] = await db.execute('SELECT * FROM quiz WHERE creator_id = ?', [userId]);
+        const userQuiz = quizRows
+        console.log(userQuiz)
+        res.json({user, quiz: userQuiz});
     } catch (err) {
         errorHandling(res, err, 'Failed to fecht user');
     }
