@@ -73,7 +73,6 @@ export const generateToken = (user) => {
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: '1h',
     });
-    console.log("mon secret:" +process.env.JWT_SECRET)
     return token;
 }
 
