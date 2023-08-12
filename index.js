@@ -237,6 +237,31 @@ app.post('/createQuiz', async (req, res) => {
     }
 });
 
+app.delete('/deleteQuiz/:quizId', async (req, res) => {
+    const quizId = req.params.quizId;
+    const userId = req.user.id; // Assurez-vous que l'utilisateur est authentifié et autorisé à supprimer ce quiz
+    
+    try {
+        // Vérifiez d'abord si le quiz appartient à l'utilisateur avant de le supprimer
+        const quizCheckQuery = `SELECT * FROM quiz WHERE id = ? AND creator_id = ?`;
+        const [quizCheckResult] = await db.execute(quizCheckQuery, [quizId, userId]);
+
+        if (quizCheckResult.length === 0) {
+            return res.status(403).json({ message: "You don't have permission to delete this quiz." });
+        }
+
+        // Supprimez le quiz
+        const deleteQuery = `DELETE FROM quiz WHERE id = ?`;
+        await db.execute(deleteQuery, [quizId]);
+
+        res.status(200).json({ message: 'Quiz deleted successfully' });
+    } catch (err) {
+        errorHandling(res, err, 'An error occurred.');
+        console.log(err);
+    }
+});
+
+
 app.listen(8800, () => {
     console.log('Connected');
 });
