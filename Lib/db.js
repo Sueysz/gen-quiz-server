@@ -117,7 +117,7 @@ export const addQuizCreator = async (title, color, questions, userId) => {
     }
 };
 
-export const addQuizCreatorCategories = async (category, quizId) =>{
+export const addQuizCategories = async (category, quizId) =>{
     try{
         await db.execute('INSERT INTO categories_quiz (category_id, quiz_id) VALUES (?, ?)', [category, quizId]);
     }catch (err) {
