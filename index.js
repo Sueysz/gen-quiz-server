@@ -3,12 +3,12 @@ import passport from 'passport';
 import cors from 'cors';
 import validator from 'validator';
 import jwt from "jsonwebtoken"
-import { db } from './lib/db.js';
+import { addQuizCreator, addQuizCreatorCategories, addQuizToCategory, addUser, allQuizCreator, checkQuizCreator, checkUsersExistance, deleteQuiz, getAllCategories, getAllQuizz, getQuizById, listQuizCategories, listUsers } from './lib/db.js';
 import { sessionMiddleWare } from './lib/session.js';
 import { configPassport, generateToken } from './lib/passport.js';
 import { hashPassword } from './lib/hashPassword.js';
 
-const errorHandling = (res, error, errorMessage = 'An error has occurred') => {
+export const errorHandling = (res, error, errorMessage = 'An error has occurred') => {
     const errorTime = new Date().getTime();
     console.error("error:"+errorTime, error);
     res.status(500).json({ error: errorMessage, errorTime });
@@ -33,7 +33,7 @@ app.use(passport.session());
 
 app.get('/quiz', async (req, res) => {
     try {
-        const [result] = await db.execute('SELECT id,title,color FROM quiz');
+        const result = await getAllQuizz();
         res.json(result);
     } catch (err) {
         errorHandling(res, err, 'Error occurred while retrieving quizzes.');
@@ -42,7 +42,7 @@ app.get('/quiz', async (req, res) => {
 
 app.get('/quiz/:id', async (req, res) => {
     try {
-        const [result] = await db.execute('SELECT id,questions,color,title FROM quiz WHERE id = ?', [req.params.id]);
+        const [result] = await getQuizById(req.params.id)
         res.json(result[0]);
     } catch (err) {
         errorHandling(res, err, "Error occurred while retrieving quizzes.");
@@ -62,13 +62,12 @@ app.post('/register', async (req, res) => {
     }
 
     try {
-        const [existingUser] = await db.query('SELECT * FROM users WHERE username = ? OR email = ?', [username, email]);
+        const existingUser = await checkUsersExistance()
         if (existingUser.length > 0) {
             return res.status(409).json({ message: "The user or email already exists." });
         }
         const hashedPassword = await hashPassword(password);
-        const query = 'INSERT INTO users (username, email, password) VALUES (?,?,?)';
-        const result = await db.query(query, [username, email, hashedPassword]);
+        const result = await addUser(username, email, hashedPassword)
         console.log("result:"+result);
     } catch (err) {
         errorHandling(res.status(500), err, "Error during registration.");
@@ -90,13 +89,12 @@ app.post('/logout', (req, res) => {
 app.get('/categories', async (req,res) =>{
     try{
         const categoriesId = req.body;
-        console.log("categories_id:"+categoriesId)
-        const [rows] = await db.execute('SELECT id,name FROM categories',[categoriesId]);
+        const [result] = await getAllCategories(categoriesId);
 
-        if(!rows.length){
+        if(!result.length){
             return res.status(404).json({message:'categories not found'});
         }
-        const categories = rows;
+        const categories = result;
         res.json(categories);
     } catch (err){
         errorHandling(res, err, 'Failed to fectch categories');
@@ -107,7 +105,7 @@ app.post('/addQuizToCategory', async (req,res) =>{
     const { categoryId, quizId } = req.body;
     console.log("categories & quizId:id"+categoryId, quizId);
     try{
-        await db.execute('INSERT INTO categories_quiz (category_id, quiz_id) VALUES (?, ?)',[categoryId, quizId]);
+        await addQuizToCategory(categoryId, quizId);
         console.log('Relation added successfully');
         res.status(200).json({ message: 'Relation added successfully'});
     } catch (err){
@@ -120,13 +118,12 @@ app.post('/addQuizToCategory', async (req,res) =>{
 app.get('/quiz_categories', async (req,res) =>{
     try{
         const quizCategoriesId = req.body;
-        console.log("quizCategories:"+quizCategoriesId)
-        const [rows] = await db.execute('SELECT * FROM categories_quiz',[quizCategoriesId]);
+        const [result] = await listQuizCategories(quizCategoriesId);
 
-        if(!rows.length){
+        if(!result.length){
             return res.status(404).json({message:'categories not found'});
         }
-        const quizCategories = rows;
+        const quizCategories = result;
         res.json(quizCategories);
     } catch (err){
         errorHandling(res, err,'Failed to fetch categories_quiz');
@@ -190,16 +187,16 @@ app.get('/user', async (req,res) =>{
     try {
         const userId = req.user.id;
         console.log(userId)
-        const [usersRows] = await db.execute('SELECT id,username,email FROM users WHERE id = ?', [userId]);
+        const [resultUsers] = await listUsers(userId)
 
-        if(!usersRows.length){
+        if(!resultUsers.length){
             return res.status(404).json({message: 'User not found'});
         }
-        const user = usersRows[0];
+        const user = resultUsers[0];
         user.password = undefined;
 
-        const [quizRows] = await db.execute('SELECT * FROM quiz WHERE creator_id = ?', [userId]);
-        const userQuiz = quizRows
+        const [resultQuizCreator] =await allQuizCreator(userId)
+        const userQuiz = resultQuizCreator
         console.log(userQuiz)
         res.json({user, quiz: userQuiz});
     } catch (err) {
@@ -214,13 +211,11 @@ app.post('/createQuiz', async (req, res) => {
     console.log(req.body)
 
     try {
-        const query = `INSERT INTO quiz (title, color, questions, creator_id) 
-                    VALUES (?, ?, ?, ?)`;
-
-        const [result] = await db.execute(query, [title, color, JSON.stringify(questions),userId]);
+        const result = await addQuizCreator(title, color, questions, userId)
+        
         const quizId = result.insertId;
         
-        await db.execute('INSERT INTO categories_quiz (category_id, quiz_id) VALUES (?, ?)', [category, quizId]);
+        await addQuizCreatorCategories(category,userId);
 
         const quiz = {
             id: quizId,
@@ -243,17 +238,14 @@ app.delete('/deleteQuiz/:quizId', async (req, res) => {
     
     try {
         // Vérifiez d'abord si le quiz appartient à l'utilisateur avant de le supprimer
-        const quizCheckQuery = `SELECT * FROM quiz WHERE id = ? AND creator_id = ?`;
-        const [quizCheckResult] = await db.execute(quizCheckQuery, [quizId, userId]);
+        const quizCheckResult =await checkQuizCreator(quizId,userId);
 
         if (quizCheckResult.length === 0) {
             return res.status(403).json({ message: "You don't have permission to delete this quiz." });
         }
 
         // Supprimez le quiz
-        const deleteQuery = `DELETE FROM quiz WHERE id = ?`;
-        await db.execute(deleteQuery, [quizId]);
-
+        await deleteQuiz(quizId);
         res.status(200).json({ message: 'Quiz deleted successfully' });
     } catch (err) {
         errorHandling(res, err, 'An error occurred.');
