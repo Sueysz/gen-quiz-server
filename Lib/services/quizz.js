@@ -16,7 +16,7 @@ unauthorizedQuizzRouter.get('/quiz', async (req, res) => {
 unauthorizedQuizzRouter.get('/quiz/:id', async (req, res) => {
     try {
         const [result] = await getQuizById(req.params.id)
-        res.json(result[0]);
+        res.json(result)
     } catch (err) {
         errorHandling(res, err, "Error occurred while retrieving quizzes.");
     }
@@ -54,10 +54,10 @@ authorizedQuizzRouter.post('/createQuiz', async (req, res) => {
 
 authorizedQuizzRouter.delete('/deleteQuiz/:quizId', async (req, res) => {
     const quizId = req.params.quizId;
-    const userId = req.user.id; // Assurez-vous que l'utilisateur est authentifié et autorisé à supprimer ce quiz
+    const userId = req.user.id; // je m'assure que l'utilisateur est authentifié et autorise à supprimer ce quiz
     
     try {
-        // Vérifiez d'abord si le quiz appartient à l'utilisateur avant de le supprimer
+        // Je vérifie d'abord si le quiz appartient à l'utilisateur avant de le supprimer
         const quizCheckResult =await checkQuizCreator(quizId,userId);
 
         if (quizCheckResult.length === 0) {

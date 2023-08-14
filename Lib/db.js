@@ -24,7 +24,7 @@ export const getAllQuizz = async () => {
 
 export const getQuizById = async (id) => {
     try {
-        const [result] = db.execute('SELECT id,questions,color,title FROM quiz WHERE id = ?', [id]);
+        const [result] = await db.execute('SELECT id,questions,color,title FROM quiz WHERE id = ?', [id]);
         return result;
     } catch (err) {
         console.error("DB Error", err)
