@@ -1,4 +1,7 @@
-import session from "express-session";
+import session from "express-session"
+import dotenv from 'dotenv'
+
+dotenv.config();
 
 export const sessionMiddleWare = session({
   secure: false,

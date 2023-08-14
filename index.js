@@ -1,22 +1,26 @@
 import express from 'express';
 import passport from 'passport';
+import dotenv from 'dotenv';
 import cors from 'cors';
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 import { sessionMiddleWare } from './lib/session.js';
 import { configPassport} from './lib/passport.js';
 import { authorizedQuizzRouter, unauthorizedQuizzRouter } from './lib/services/quizz.js';
 import { authorizedUsersRouter, unauthorizedUsersRouter } from './lib/services/user.js';
 import { unauthorizedCategories } from './lib/services/category.js';
 
+
 const app = express();
 configPassport();
+dotenv.config();
 app.use(sessionMiddleWare);
 app.use(express.json());
 app.use(cors({
     origin: 'http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
+    credentials: true,
+    optionsSuccessStatus: 204,
 }));
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
