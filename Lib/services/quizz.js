@@ -35,7 +35,7 @@ authorizedQuizzRouter.post('/createQuiz', async (req, res) => {
         
         const quizId = result.insertId;
         
-        await addQuizCategories(category,userId);
+        await addQuizCategories(category,quizId);
 
         const quiz = {
             id: quizId,
