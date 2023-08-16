@@ -71,7 +71,7 @@ export const generateToken = (user) => {
 
     // Génère un token JWT signé avec la clé secrète process.env.JWT_SECRET elle est configurée pour expirer dans une heure
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: '1h',
+        expiresIn: '3h',
     });
     return token;
 }

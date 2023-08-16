@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addQuizCreator, addQuizCategories, checkQuizCreator, deleteQuiz, getAllQuizz, getQuizById } from '../db.js';
+import { addQuizCategories, checkQuizCreator, deleteQuiz, getAllQuizz, getQuizById, addQuiz } from '../db.js';
 import { errorHandling } from "../errorHandling.js";
 
 export const unauthorizedQuizzRouter = new Router;
@@ -31,7 +31,7 @@ authorizedQuizzRouter.post('/createQuiz', async (req, res) => {
     console.log(req.body)
 
     try {
-        const result = await addQuizCreator(title, color, questions, userId)
+        const result = await addQuiz(title, color, questions, userId)
         
         const quizId = result.insertId;
         

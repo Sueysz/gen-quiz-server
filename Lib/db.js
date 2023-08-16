@@ -106,7 +106,7 @@ export const allQuizCreator = async (userId) =>{
     }
 };
 
-export const addQuizCreator = async (title, color, questions, userId) => {
+export const addQuiz = async (title, color, questions, userId) => {
     try{
         const query = `INSERT INTO quiz (title, color, questions, creator_id) VALUES (?, ?, ?, ?)`;
         const [result] = await db.execute(query, [title, color, JSON.stringify(questions),userId]);
