@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import jwt from "jsonwebtoken";
 import { sessionMiddleWare } from './lib/session.js';
-import { configPassport} from './lib/passport.js';
+import { configPassport } from './lib/passport.js';
 import { authorizedQuizzRouter, unauthorizedQuizzRouter } from './lib/services/quizz.js';
 import { authorizedUsersRouter, unauthorizedUsersRouter } from './lib/services/user.js';
 import { unauthorizedCategories } from './lib/services/category.js';
@@ -50,7 +50,6 @@ app.use((req, res, next) => {
     } catch (error) {
         if (error.name === 'TokenExpiredError') {
             console.log('Token expired:', error.expiredAt);
-            req.logout(); // Déconnexion automatique de l'utilisateur
             return res.status(401).json({ message: "Token expired. User has been logged out." });
         } else {
             console.log('Invalid token:', error);
