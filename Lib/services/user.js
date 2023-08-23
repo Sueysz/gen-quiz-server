@@ -29,7 +29,7 @@ unauthorizedUsersRouter.post('/register', async (req, res) => {
         const result = await addUser(username, email, hashedPassword)
         console.log("result:"+result);
     } catch (err) {
-        errorHandling(res.status(500), err, "Error during registration.");
+        errorHandling(res, err, "Error during registration.");
     }
     res.send({ message: 'Success' });
 });
@@ -91,6 +91,6 @@ authorizedUsersRouter.get('/user', async (req,res) =>{
         console.log(userQuiz)
         res.json({user, quiz: userQuiz});
     } catch (err) {
-        errorHandling(res, err, 'Failed to fecht user');
+        errorHandling(res, err, 'Failed to fetch user');
     }
 })

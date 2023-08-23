@@ -60,7 +60,9 @@ app.use((req, res, next) => {
 
 app.use(authorizedQuizzRouter);
 app.use(authorizedUsersRouter);
-
+app.use((error, req, res, next) =>{
+    console.error(error);
+})
 
 app.listen(8800, () => {
     console.log('Connected');
