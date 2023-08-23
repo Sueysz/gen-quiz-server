@@ -1,6 +1,5 @@
-export const errorHandling = (res, error, errorMessage = 'An error has occurred') => {
+export const errorHandling = (res, error, errorMessage = 'An error has occurred',errorCode) => {
     const errorTime = new Date().getTime();
     console.error("error:"+errorTime, error);
-    res.status(500).json({ error: errorMessage, errorTime });
-    throw error;
+    res.status(errorCode).json({ error: errorMessage, errorTime });
 };

@@ -13,23 +13,23 @@ unauthorizedUsersRouter.post('/register', async (req, res) => {
     console.log("req.body:register"+req.body)
 
     if (!email) {
-        return res.status(400).json({ message: "L'e-mail is required" });
+        return errorHandling(res, "L'e-mail is required", 400);
     }
 
     if (!validator.isEmail(email)) {
-        return res.status(400).json({ message: "The email is invalid." });
+        return errorHandling(res, "The email is invalid.", 400);
     }
 
     try {
         const existingUser = await checkUsersExistance()
         if (existingUser.length > 0) {
-            return res.status(409).json({ message: "The user or email already exists." });
+            return errorHandling(res, "The user or email already exists.", 409);
         }
         const hashedPassword = await hashPassword(password);
         const result = await addUser(username, email, hashedPassword)
         console.log("result:"+result);
     } catch (err) {
-        errorHandling(res, err, "Error during registration.");
+        return errorHandling(res, err, "Error during registration.", 500);
     }
     res.send({ message: 'Success' });
 });
@@ -38,7 +38,7 @@ unauthorizedUsersRouter.post('/logout', (req, res) => {
     req.logout((err) => {
         if (err) {
             console.log('Logout error:', err);
-            return res.status(500).json({ message: 'An error occured during' });
+            return errorHandling(res, 'An error occured during', 500);
         }
     })
     return res.status(200).json({ message: 'Log-out successful.' })
@@ -56,7 +56,7 @@ unauthorizedUsersRouter.post('/login', async (req, res, next) => {
         }
         if (!user) {
             console.log('Invalid credentials');
-            return res.status(401).json({ message: 'Invalid credentials' });
+            return errorHandling(res, 'Invalid credentials', 401);
         }
         req.logIn(user, (err) => {
             if (err) {
@@ -81,7 +81,7 @@ authorizedUsersRouter.get('/user', async (req,res) =>{
         const [resultUsers] = await listUsers(userId)
 
         if(!resultUsers.length){
-            return res.status(404).json({message: 'User not found'});
+            return errorHandling(res, 'User not found', 404);
         }
         const user = resultUsers[0];
         user.password = undefined;
@@ -91,6 +91,6 @@ authorizedUsersRouter.get('/user', async (req,res) =>{
         console.log(userQuiz)
         res.json({user, quiz: userQuiz});
     } catch (err) {
-        errorHandling(res, err, 'Failed to fetch user');
+        errorHandling(res, err, 'Failed to fetch user',500);
     }
 })
