@@ -9,7 +9,7 @@ unauthorizedQuizzRouter.get('/quiz', async (req, res) => {
         const result = await getAllQuizz();
         res.json(result);
     } catch (err) {
-        errorHandling(res, err, 'Error occurred while retrieving quizzes.');
+        errorHandling(res, err, 'Error occurred while retrieving quizzes.', 500);
     }
 });
 
@@ -18,7 +18,7 @@ unauthorizedQuizzRouter.get('/quiz/:id', async (req, res) => {
         const [result] = await getQuizById(req.params.id)
         res.json(result)
     } catch (err) {
-        errorHandling(res, err, "Error occurred while retrieving quizzes.");
+        errorHandling(res, err, "Error occurred while retrieving quizzes.",500);
     }
 });
 
@@ -47,7 +47,7 @@ authorizedQuizzRouter.post('/createQuiz', async (req, res) => {
 
         res.status(200).json({ message: 'Quiz created successfully', quiz });
     } catch (err) {
-        errorHandling(res, err, 'An Error occurred.');
+        errorHandling(res, err, 'An Error occurred.', 500);
         console.log(err)
     }
 });
@@ -68,7 +68,7 @@ authorizedQuizzRouter.delete('/deleteQuiz/:quizId', async (req, res) => {
         await deleteQuiz(quizId);
         res.status(200).json({ message: 'Quiz deleted successfully' });
     } catch (err) {
-        errorHandling(res, err, 'An error occurred.');
+        errorHandling(res, err, 'An error occurred.',500);
         console.log(err);
     }
 });
