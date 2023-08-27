@@ -15,7 +15,7 @@ unauthorizedCategories.get('/categories', async (req,res) =>{
         const categories = result;
         res.json(categories);
     } catch (err){
-        errorHandling(res, err, 'Failed to fectch categories');
+        errorHandling(res, err, 'Failed to fectch categories',500);
     }
 });
 
@@ -27,7 +27,7 @@ unauthorizedCategories.post('/addQuizToCategory', async (req,res) =>{
         console.log('Relation added successfully');
         res.status(200).json({ message: 'Relation added successfully'});
     } catch (err){
-        errorHandling(res, err, 'Error while inserting into categories_quiz table:', err);
+        errorHandling(res, err, 'Error while inserting into categories_quiz table:', 500);
     }
 });
 
@@ -42,6 +42,6 @@ unauthorizedCategories.get('/quiz_categories', async (req,res) =>{
         const quizCategories = result;
         res.json(quizCategories);
     } catch (err){
-        errorHandling(res, err,'Failed to fetch categories_quiz');
+        errorHandling(res, err,'Failed to fetch categories_quiz',500);
     }
 })
