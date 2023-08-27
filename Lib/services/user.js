@@ -5,10 +5,17 @@ import { addUser, allQuizCreator, checkUsersExistance, listUsers } from "../db.j
 import {hashPassword} from "../hashPassword.js"
 import { errorHandling } from "../errorHandling.js";
 import { generateToken } from "../passport.js";
+import { user as userSchema } from '../validation.js'
 
 export const unauthorizedUsersRouter = new Router
 
 unauthorizedUsersRouter.post('/register', async (req, res) => {
+    const validationResult = userSchema.post.validate(req.body) 
+    if(validationResult.error){
+        return errorHandling(res, validationResult.error, 'Invalid input', 400)
+        
+    }
+
     const { username, password, email } = req.body;
     console.log("req.body:register"+req.body)
 
@@ -29,6 +36,9 @@ unauthorizedUsersRouter.post('/register', async (req, res) => {
         const result = await addUser(username, email, hashedPassword)
         console.log("result:"+result);
     } catch (err) {
+        if(err.code && err.code === 'ER_DUP_ENTRY'){
+            return errorHandling(res, err, "duplicate value.", 409);
+        }
         return errorHandling(res, err, "Error during registration.", 500);
     }
     res.send({ message: 'Success' });
@@ -52,16 +62,16 @@ unauthorizedUsersRouter.post('/login', async (req, res, next) => {
     await passport.authenticate('local', (err, user) => {
         if (err) {
             console.log('Passport authentication error:', err);
-            return next(err);
+            return errorHandling(res, 'authentication error',err,500);
         }
         if (!user) {
             console.log('Invalid credentials');
-            return errorHandling(res, 'Invalid credentials', 401);
+            return errorHandling(res, 'Invalid credentials',err, 401);
         }
         req.logIn(user, (err) => {
             if (err) {
                 console.log('Login error:', err);
-                return next(err);
+                return errorHandling(res, 'Invalid credentials', err, 500);
             }
             console.log('Authentication successful');
 

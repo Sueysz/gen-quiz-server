@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { addQuizCategories, checkQuizCreator, deleteQuiz, getAllQuizz, getQuizById, addQuiz } from '../db.js';
 import { errorHandling } from "../errorHandling.js";
+import { quizz as quizzSchema } from '../validation.js'
 
 export const unauthorizedQuizzRouter = new Router;
 
@@ -25,6 +26,11 @@ unauthorizedQuizzRouter.get('/quiz/:id', async (req, res) => {
 export const authorizedQuizzRouter = new Router()
 
 authorizedQuizzRouter.post('/createQuiz', async (req, res) => {
+    const validationResult = quizzSchema.post.validate(req.body) 
+    if(validationResult.error){
+        return errorHandling(res, validationResult.error, 'Invalid input', 400)
+        
+    }
     const { title, color, questions, category } = req.body;
     const userId = req.user.id;
 
@@ -42,7 +48,7 @@ authorizedQuizzRouter.post('/createQuiz', async (req, res) => {
             title,
             color,
             questions,
-            category_id: category,
+            category,
         }
 
         res.status(200).json({ message: 'Quiz created successfully', quiz });
